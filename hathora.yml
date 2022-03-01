@@ -1,0 +1,38 @@
+types:
+  GameStatus:
+  - NOT_STARTED
+  - RUNNING
+  - PLAYER_1_WON
+  - PLAYER_2_WON
+
+  TileState:
+  - NOT_ACTIVE
+  - ACTIVE
+  - WRONG
+  - WRONG_TILE
+  - CORRECT
+
+  Player:
+    id: UserId 
+    boardState: boardState: {val: string, tile: TileState}[]
+ 
+
+  PlayerState:
+    players: Player[]
+    gameStatus : GameStatus
+    timeLeft : int
+
+methods:
+  joinGame:
+  startGame:
+  fillTile:
+  makeGuess:
+  deleteLastTile:
+
+
+
+auth:
+  anonymous: {}
+
+userState: PlayerState
+error: string
