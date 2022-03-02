@@ -3,7 +3,7 @@ import { Response } from "../api/base";
 import {
   TileState,
   Tile,
-  Row,
+  GuessRow,
   Player,
   PlayerState,
   UserId,
@@ -12,18 +12,43 @@ import {
   IMakeGuessRequest,
   IDeleteLastTileRequest,
   GameStatus,
+  IJoinGameRequest,
+  boardState,
 } from "../api/types";
 
-type InternalState = PlayerState {
+const boardInitState : boardState = [
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}],
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}],
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}],
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}],
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}],
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}],
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}],
+[{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""},{state: TileState.NOT_ACTIVE, char:""}]] 
+
+type InternalState ={
   players: Player[];
-  gameStatus: GameStatus ;
+  gameStatus: GameStatus;
+  timeLeft: number;
 };
+ 
+type InternalPlayer = {
+  id: UserId;
+  gameBoard: boardState;
+}
 
 export class Impl implements Methods<InternalState> {
   initialize(userId: UserId, ctx: Context): InternalState {
     return {
       players: [],
+      gameStatus: 0,
+      timeLeft: 60
     };
+  }
+  joinGame(state: PlayerState, userId: string, ctx: Context, request: IJoinGameRequest): Response {
+    let freshBoardState : boardState = JSON.parse(JSON.stringify(boardInitState)
+    state.players.push({ id: userId, gameBoard: boardInitState });
+    return Response.ok();
   }
 
   startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
@@ -61,4 +86,15 @@ export class Impl implements Methods<InternalState> {
   getUserState(state: InternalState, userId: UserId): PlayerState {
     return state;
   }
+}
+
+
+function createPlayer(id: UserId): InternalPlayerInfo {
+  return {
+    id,
+    chipCount: 0,
+    chipsInPot: 0,
+    cards: [],
+    status: PlayerStatus.WAITING,
+  };
 }

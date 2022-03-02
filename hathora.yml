@@ -12,10 +12,20 @@ types:
   - WRONG_TILE
   - CORRECT
 
+  
+  
+  Tile: 
+    state: TileState
+    char: string
+
+
+  boardState: GuessRow[]
+
+  GuessRow: Tile[]
+
   Player:
     id: UserId 
-    boardState: boardState: {val: string, tile: TileState}[]
- 
+    gameBoard: boardState 
 
   PlayerState:
     players: Player[]
