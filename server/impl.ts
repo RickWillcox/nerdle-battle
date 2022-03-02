@@ -20,6 +20,14 @@ import { ValidInputs } from './ValidInputs';
 import { getNextAvailableTileIndex, getLastTileChangedIndex, getGuessColours } from './Tilefunctions';
 import { getPlayerIndexFromUserId, scrubCharForOtherPlayers } from './PlayerFunctions';
 import { isEquationValid, makeEquationFromGuessRow } from './MathFunctions';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+// const Timer = require('tiny-timer');
+// const timer = new Timer({ interval: 1000 });
+// timer.on('tick', (ms: number) => console.log('tick', ms));
+// timer.on('done', () => console.log('done!'));
+// timer.on('statusChanged', (status) => console.log('status:', status));
 
 type InternalState = GameState;
 
@@ -53,6 +61,7 @@ export class Impl implements Methods<InternalState> {
         state.nerdleAnswer = ctx.chance.pickone(FinalAnswers);
         state.gameStatus = GameStatus.RUNNING;
         console.log(state.nerdleAnswer);
+        // timer.start(5000);
         return Response.ok();
     }
     fillTile(state: InternalState, userId: UserId, ctx: Context, request: IFillTileRequest): Response {

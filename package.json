@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "hathora": "^0.5.20"
+    "hathora": "^0.5.20",
+    "tiny-timer": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.21"
   }
 }
