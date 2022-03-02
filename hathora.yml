@@ -12,37 +12,34 @@ types:
   - WRONG_TILE
   - CORRECT
 
-  
-  
   Tile: 
     state: TileState
-    char: string
+    char: string?
 
-
-  boardState: GuessRow[]
+  BoardState: GuessRow[]
 
   GuessRow: Tile[]
 
   Player:
     id: UserId 
-    gameBoard: boardState 
+    gameBoard: BoardState 
 
-  PlayerState:
+  GameState:
     players: Player[]
     gameStatus : GameStatus
     timeLeft : int
+    nerdleAnswer : string?
 
 methods:
   joinGame:
   startGame:
-  fillTile:
-  makeGuess:
+  fillTile: 
+    input: string
+  makeGuess: 
   deleteLastTile:
-
-
 
 auth:
   anonymous: {}
 
-userState: PlayerState
+userState: GameState
 error: string
