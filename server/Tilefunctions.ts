@@ -17,3 +17,29 @@ export function getLastTileChangedIndex(boardState: BoardState) {
     // returns index or -1 if no entries in guessrow yet
     return indexOfLastTileChanged;
 }
+
+export function assignGuessColours(guessRow: GuessRow, answer: string): string[] {
+    let guess = guessRow.join('');
+
+    // Correct
+    for (let i = 0; i < guess.length; i++) {
+        if (guess[i] === answer[i]) {
+            guess = guess.replace(guess[i], 'G');
+            answer = answer.replace(answer[i], 'G');
+        }
+    }
+
+    // Wrong position
+    for (let i = 0; i < guess.length; i++) {
+        if (guess[i] === 'G' || guess[i] === 'Y' || guess[i] === 'B') continue;
+        if (answer.includes(guess[i])) {
+            answer = answer.replace(guess[i], 'Y');
+            guess = guess.replace(guess[i], 'Y');
+        } else {
+            answer = answer.replace(guess[i], 'B');
+            guess = guess.replace(guess[i], 'B');
+        }
+    }
+
+    return guess.split('');
+}
