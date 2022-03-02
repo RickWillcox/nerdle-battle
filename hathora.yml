@@ -1,45 +1,45 @@
 types:
-  GameStatus:
-  - NOT_STARTED
-  - RUNNING
-  - PLAYER_1_WON
-  - PLAYER_2_WON
+    GameStatus:
+        - NOT_STARTED
+        - RUNNING
+        - ENDED
 
-  TileState:
-  - NOT_ACTIVE
-  - ACTIVE
-  - WRONG
-  - WRONG_TILE
-  - CORRECT
+    TileState:
+        - NOT_ACTIVE
+        - ACTIVE
+        - WRONG
+        - WRONG_TILE
+        - CORRECT
 
-  Tile: 
-    state: TileState
-    char: string?
+    Tile:
+        state: TileState
+        char: string?
 
-  BoardState: GuessRow[]
+    BoardState: GuessRow[]
 
-  GuessRow: Tile[]
+    GuessRow: Tile[]
 
-  Player:
-    id: UserId 
-    gameBoard: BoardState 
+    Player:
+        id: UserId
+        gameBoard: BoardState
 
-  GameState:
-    players: Player[]
-    gameStatus : GameStatus
-    timeLeft : int
-    nerdleAnswer : string?
+    GameState:
+        players: Player[]
+        gameStatus: GameStatus
+        timeLeft: int
+        nerdleAnswer: string?
+        winner: UserId?
 
 methods:
-  joinGame:
-  startGame:
-  fillTile: 
-    input: string
-  makeGuess: 
-  deleteLastTile:
+    joinGame:
+    startGame:
+    fillTile:
+        input: string
+    makeGuess:
+    deleteLastTile:
 
 auth:
-  anonymous: {}
+    anonymous: {}
 
 userState: GameState
 error: string

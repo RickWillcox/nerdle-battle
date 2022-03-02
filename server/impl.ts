@@ -18,7 +18,7 @@ import {
 import { FinalAnswers } from './FinalAnswers';
 import { ValidInputs } from './ValidInputs';
 import { getNextAvailableTileIndex, getLastTileChangedIndex, getGuessColours } from './Tilefunctions';
-import { getPlayerIndexFromUserId } from './PlayerFunctions';
+import { getPlayerIndexFromUserId, scrubCharForOtherPlayers } from './PlayerFunctions';
 import { isEquationValid, makeEquationFromGuessRow } from './MathFunctions';
 
 type InternalState = GameState;
@@ -33,6 +33,7 @@ const DEFAULT_ROW: GuessRow = [
     { state: TileState.NOT_ACTIVE, char: '' },
     { state: TileState.NOT_ACTIVE, char: '' },
 ];
+
 export class Impl implements Methods<InternalState> {
     initialize(userId: UserId, ctx: Context): InternalState {
         return {
@@ -51,80 +52,97 @@ export class Impl implements Methods<InternalState> {
     startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
         state.nerdleAnswer = ctx.chance.pickone(FinalAnswers);
         state.gameStatus = GameStatus.RUNNING;
+        console.log(state.nerdleAnswer);
         return Response.ok();
     }
     fillTile(state: InternalState, userId: UserId, ctx: Context, request: IFillTileRequest): Response {
-        if (!ValidInputs.includes(request.input)) return Response.error(`Invalid Input ${request.input}`);
+        if (state.gameStatus === GameStatus.RUNNING) {
+            if (!ValidInputs.includes(request.input)) return Response.error(`Invalid Input ${request.input}`);
 
-        let playerIndex = getPlayerIndexFromUserId(state.players, userId);
-        let playerBoard = state.players[playerIndex].gameBoard;
-        let tileIndex = getNextAvailableTileIndex(Array.from(playerBoard));
-        let guessRowIndex: number = playerBoard.length - 1;
+            let playerIndex = getPlayerIndexFromUserId(state.players, userId);
+            let playerBoard = state.players[playerIndex].gameBoard;
+            let tileIndex = getNextAvailableTileIndex(Array.from(playerBoard));
+            let guessRowIndex: number = playerBoard.length - 1;
 
-        if (tileIndex === -1) return Response.error('No Tiles to fill');
+            if (tileIndex === -1) return Response.error('No Tiles to fill');
 
-        playerBoard[guessRowIndex][tileIndex].char = request.input;
-        playerBoard[guessRowIndex][tileIndex].state = TileState.ACTIVE;
+            playerBoard[guessRowIndex][tileIndex].char = request.input;
+            playerBoard[guessRowIndex][tileIndex].state = TileState.ACTIVE;
 
-        return Response.ok();
+            return Response.ok();
+        }
+        return Response.error('Game is not running');
     }
     makeGuess(state: InternalState, userId: UserId, ctx: Context, request: IMakeGuessRequest): Response {
-        let playerIndex = getPlayerIndexFromUserId(state.players, userId);
-        let playerBoard = state.players[playerIndex].gameBoard;
-        let guessRowIndex: number = playerBoard.length - 1;
-        makeEquationFromGuessRow;
-        let guessEquation: string = makeEquationFromGuessRow(playerBoard[guessRowIndex]);
+        if (state.gameStatus === GameStatus.RUNNING) {
+            let playerIndex = getPlayerIndexFromUserId(state.players, userId);
+            let playerBoard = state.players[playerIndex].gameBoard;
+            let guessRowIndex: number = playerBoard.length - 1;
+            makeEquationFromGuessRow;
+            let guessEquation: string = makeEquationFromGuessRow(playerBoard[guessRowIndex]);
 
-        let equationValid = isEquationValid(guessEquation);
+            let equationValid = isEquationValid(guessEquation);
 
-        if (!equationValid) return Response.error('Equation is not valid');
+            if (!equationValid) return Response.error('Equation is not valid');
 
-        // update colours based on what what correct/ wrong or wrong position
-        if (state.nerdleAnswer === undefined) return Response.error('Answer not found. Server Error');
-        let guessColours = getGuessColours(playerBoard[guessRowIndex], state.nerdleAnswer);
-        for (let i = 0; i < guessColours.length; i++) {
-            let tS: TileState;
-            if (guessColours[i] === 'G') {
-                tS = TileState.CORRECT;
-            } else if (guessColours[i] === 'Y') {
-                tS = TileState.WRONG_TILE;
-            } else {
-                tS = TileState.WRONG;
+            // update colours based on what what correct/ wrong or wrong position
+            if (state.nerdleAnswer === undefined) return Response.error('Answer not found. Server Error');
+            let guessColours = getGuessColours(playerBoard[guessRowIndex], state.nerdleAnswer);
+            for (let i = 0; i < guessColours.length; i++) {
+                let tS: TileState;
+                if (guessColours[i] === 'G') {
+                    tS = TileState.CORRECT;
+                } else if (guessColours[i] === 'Y') {
+                    tS = TileState.WRONG_TILE;
+                } else {
+                    tS = TileState.WRONG;
+                }
+                playerBoard[guessRowIndex][i].state = tS;
             }
-            playerBoard[guessRowIndex][i].state = tS;
+            console.log('Nerdle Answer: ', state.nerdleAnswer);
+            console.log('Player guess: ', guessEquation);
+
+            // Wrong answer
+            if (guessEquation !== state.nerdleAnswer) {
+                // push a new guess row
+                playerBoard.push(Array.from(DEFAULT_ROW));
+                return Response.error('Equation is not the answer');
+            }
+
+            // Made it this far its the correct answer
+            console.log('correct answer');
+            state.winner = userId;
+            state.gameStatus = GameStatus.ENDED;
+            return Response.ok();
         }
-
-        if (guessEquation !== state.nerdleAnswer) {
-            return Response.error('Equation is not the answer');
-        }
-
-        // Made it this far its the correct answer
-        console.log('correct answer');
-        //TODO START HERE MAKE A NEW ROW
-        // push a new guess row
-        // playerBoard.push(Array.from(DEFAULT_ROW));
-
-        return Response.ok();
+        return Response.error('Game is not running');
     }
     deleteLastTile(state: InternalState, userId: UserId, ctx: Context, request: IDeleteLastTileRequest): Response {
-        let playerIndex = getPlayerIndexFromUserId(state.players, userId);
-        let playerBoard = state.players[playerIndex].gameBoard;
-        let lastTileIndex = getLastTileChangedIndex(Array.from(playerBoard));
-        let guessRowIndex: number = playerBoard.length - 1;
+        if (state.gameStatus === GameStatus.RUNNING) {
+            let playerIndex = getPlayerIndexFromUserId(state.players, userId);
+            let playerBoard = state.players[playerIndex].gameBoard;
+            let lastTileIndex = getLastTileChangedIndex(Array.from(playerBoard));
+            let guessRowIndex: number = playerBoard.length - 1;
 
-        if (lastTileIndex <= -1) return Response.error('Nothing to Delete');
+            if (lastTileIndex <= -1) return Response.error('Nothing to Delete');
 
-        playerBoard[guessRowIndex][lastTileIndex].char = '';
-        playerBoard[guessRowIndex][lastTileIndex].state = TileState.NOT_ACTIVE;
-        return Response.ok();
+            playerBoard[guessRowIndex][lastTileIndex].char = '';
+            playerBoard[guessRowIndex][lastTileIndex].state = TileState.NOT_ACTIVE;
+            return Response.ok();
+        }
+        return Response.error('Game is not running');
     }
     getUserState(state: InternalState, userId: UserId): GameState {
         let nAnswer = state.nerdleAnswer;
         if (state.gameStatus === GameStatus.RUNNING || state.gameStatus === GameStatus.NOT_STARTED) {
             nAnswer = undefined;
         }
+        let playersArray: Player[] = scrubCharForOtherPlayers(Array.from(state.players), userId);
+        playersArray.forEach((p) => {
+            console.log(userId, p.gameBoard);
+        });
         return {
-            players: state.players,
+            players: playersArray,
             gameStatus: state.gameStatus,
             timeLeft: state.timeLeft,
             nerdleAnswer: nAnswer,
