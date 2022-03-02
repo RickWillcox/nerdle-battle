@@ -78,12 +78,15 @@ export class Impl implements Methods<InternalState> {
         let equationValid = isEquationValid(guessEquation);
 
         if (!equationValid) return Response.error('Equation is not valid');
-        console.log('guess: ', guessEquation);
-        console.log('answer: ', state.nerdleAnswer);
         if (guessEquation !== state.nerdleAnswer) {
             return Response.error('Equation is not the answer');
         }
+
+        // Made it this far its the correct answer
         console.log('correct answer');
+        // push a new guess row
+        playerBoard.push(Array.from(DEFAULT_ROW));
+        // update colours based on what what correct/ wrong or wrong position
         return Response.ok();
     }
     deleteLastTile(state: InternalState, userId: UserId, ctx: Context, request: IDeleteLastTileRequest): Response {
