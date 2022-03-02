@@ -100,7 +100,7 @@ export class Impl implements Methods<InternalState> {
 
         // Made it this far its the correct answer
         console.log('correct answer');
-
+        //TODO START HERE MAKE A NEW ROW
         // push a new guess row
         // playerBoard.push(Array.from(DEFAULT_ROW));
 
