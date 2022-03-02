@@ -1,4 +1,5 @@
 import { BoardState, GuessRow } from '../api/types';
+import { makeEquationFromGuessRow } from './MathFunctions';
 
 export function getNextAvailableTileIndex(boardState: BoardState): number {
     let currentGuessRow: GuessRow = boardState[boardState.length - 1];
@@ -8,7 +9,6 @@ export function getNextAvailableTileIndex(boardState: BoardState): number {
 }
 
 export function getLastTileChangedIndex(boardState: BoardState) {
-    console.log(boardState);
     let currentGuessRow: GuessRow = boardState[boardState.length - 1];
     let indexOfLastTileChanged = currentGuessRow.findIndex((tile) => tile.char === '') - 1;
     if (indexOfLastTileChanged === -2) {
@@ -18,9 +18,9 @@ export function getLastTileChangedIndex(boardState: BoardState) {
     return indexOfLastTileChanged;
 }
 
-export function assignGuessColours(guessRow: GuessRow, answer: string): string[] {
-    let guess = guessRow.join('');
-
+export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): string {
+    let guess = makeEquationFromGuessRow(guessRow);
+    let answer = nerdleAnswer;
     // Correct
     for (let i = 0; i < guess.length; i++) {
         if (guess[i] === answer[i]) {
@@ -41,5 +41,5 @@ export function assignGuessColours(guessRow: GuessRow, answer: string): string[]
         }
     }
 
-    return guess.split('');
+    return guess;
 }

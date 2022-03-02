@@ -17,7 +17,7 @@ import {
 } from '../api/types';
 import { FinalAnswers } from './FinalAnswers';
 import { ValidInputs } from './ValidInputs';
-import { getNextAvailableTileIndex, getLastTileChangedIndex } from './Tilefunctions';
+import { getNextAvailableTileIndex, getLastTileChangedIndex, getGuessColours } from './Tilefunctions';
 import { getPlayerIndexFromUserId } from './PlayerFunctions';
 import { isEquationValid, makeEquationFromGuessRow } from './MathFunctions';
 
@@ -51,7 +51,7 @@ export class Impl implements Methods<InternalState> {
     startGame(state: InternalState, userId: UserId, ctx: Context, request: IStartGameRequest): Response {
         state.nerdleAnswer = ctx.chance.pickone(FinalAnswers);
         state.gameStatus = GameStatus.RUNNING;
-        return Response.error('Not implemented');
+        return Response.ok();
     }
     fillTile(state: InternalState, userId: UserId, ctx: Context, request: IFillTileRequest): Response {
         if (!ValidInputs.includes(request.input)) return Response.error(`Invalid Input ${request.input}`);
@@ -78,15 +78,32 @@ export class Impl implements Methods<InternalState> {
         let equationValid = isEquationValid(guessEquation);
 
         if (!equationValid) return Response.error('Equation is not valid');
+
+        // update colours based on what what correct/ wrong or wrong position
+        if (state.nerdleAnswer === undefined) return Response.error('Answer not found. Server Error');
+        let guessColours = getGuessColours(playerBoard[guessRowIndex], state.nerdleAnswer);
+        for (let i = 0; i < guessColours.length; i++) {
+            let tS: TileState;
+            if (guessColours[i] === 'G') {
+                tS = TileState.CORRECT;
+            } else if (guessColours[i] === 'Y') {
+                tS = TileState.WRONG_TILE;
+            } else {
+                tS = TileState.WRONG;
+            }
+            playerBoard[guessRowIndex][i].state = tS;
+        }
+
         if (guessEquation !== state.nerdleAnswer) {
             return Response.error('Equation is not the answer');
         }
 
         // Made it this far its the correct answer
         console.log('correct answer');
+
         // push a new guess row
-        playerBoard.push(Array.from(DEFAULT_ROW));
-        // update colours based on what what correct/ wrong or wrong position
+        // playerBoard.push(Array.from(DEFAULT_ROW));
+
         return Response.ok();
     }
     deleteLastTile(state: InternalState, userId: UserId, ctx: Context, request: IDeleteLastTileRequest): Response {
