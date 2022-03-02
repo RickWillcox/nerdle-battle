@@ -5,10 +5,10 @@ export function getPlayerIndexFromUserId(allPlayers: Player[], userId: UserId): 
 }
 
 export function scrubCharForOtherPlayers(playersArray: Player[], userId: UserId): Player[] {
-    console.log(userId);
-    playersArray.forEach((p) => {
-        console.log(p.gameBoard);
-    });
+    // console.log(userId);
+    // playersArray.forEach((p) => {
+    //     console.log(p.gameBoard);
+    // });
     playersArray.forEach((player) => {
         if (player.id !== userId) {
             player.gameBoard.forEach((guessRow) => {
@@ -18,9 +18,9 @@ export function scrubCharForOtherPlayers(playersArray: Player[], userId: UserId)
             });
         }
     });
-    console.log(userId);
-    playersArray.forEach((p) => {
-        console.log(p.gameBoard);
-    });
+    // console.log(userId);
+    // playersArray.forEach((p) => {
+    //     console.log(p.gameBoard);
+    // });
     return playersArray;
 }
