@@ -37,6 +37,12 @@ type InternalPlayer = {
   gameBoard: boardState;
 }
 
+type InternalPlayer = {
+  id: UserId;
+  boardState: Row[];
+
+}
+
 export class Impl implements Methods<InternalState> {
   initialize(userId: UserId, ctx: Context): InternalState {
     return {
