@@ -65,6 +65,7 @@ export class Impl implements Methods<InternalState> {
         return Response.ok();
     }
     fillTile(state: InternalState, userId: UserId, ctx: Context, request: IFillTileRequest): Response {
+        console.log('🚀 ~ file: impl.ts ~ line 68 ~ Impl ~ fillTile ~ userId', userId);
         if (state.gameStatus === GameStatus.RUNNING) {
             if (!ValidInputs.includes(request.input)) return Response.error(`Invalid Input ${request.input}`);
 
@@ -146,12 +147,9 @@ export class Impl implements Methods<InternalState> {
         if (state.gameStatus === GameStatus.RUNNING || state.gameStatus === GameStatus.NOT_STARTED) {
             nAnswer = undefined;
         }
-        let playersArray: Player[] = scrubCharForOtherPlayers(Array.from(state.players), userId);
-        playersArray.forEach((p) => {
-            console.log(userId, p.gameBoard);
-        });
+        // let playersArray: Player[] = scrubCharForOtherPlayers(Array.from(state.players), userId);
         return {
-            players: playersArray,
+            players: state.players,
             gameStatus: state.gameStatus,
             timeLeft: state.timeLeft,
             nerdleAnswer: nAnswer,

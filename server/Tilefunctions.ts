@@ -18,7 +18,7 @@ export function getLastTileChangedIndex(boardState: BoardState) {
     return indexOfLastTileChanged;
 }
 
-export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): string {
+export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): string[] {
     let guess = makeEquationFromGuessRow(guessRow);
     let answer = nerdleAnswer;
     // Correct
@@ -41,5 +41,5 @@ export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): strin
         }
     }
 
-    return guess;
+    return guess.split('');
 }
