@@ -12,3 +12,10 @@ export function makeEquationFromGuessRow(guessRow: GuessRow): string {
     guessRow.forEach((dic) => (equation += dic.char));
     return equation;
 }
+
+export function gameTimeLeft(startTime: number, currentTime: number, gameTime: number): number {
+    let timeDiff = currentTime - startTime;
+    timeDiff /= 1000;
+    let secondsRunning = Math.round(timeDiff % 60);
+    return gameTime - secondsRunning;
+}

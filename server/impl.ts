@@ -26,15 +26,13 @@ import {
     updateInputBoard,
 } from './Tilefunctions';
 import { getPlayerIndexFromUserId, removeDataForOtherPlayers } from './PlayerFunctions';
-import { isEquationValid, makeEquationFromGuessRow } from './MathFunctions';
+import { isEquationValid, makeEquationFromGuessRow, gameTimeLeft } from './MathFunctions';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
+const Stopwatch = require('stopwatch').Stopwatch;
 
-// const Timer = require('tiny-timer');
-// const timer = new Timer({ interval: 1000 });
-// timer.on('tick', (ms: number) => console.log('tick', ms));
-// timer.on('done', () => console.log('done!'));
-// timer.on('statusChanged', (status) => console.log('status:', status));
+const GAME_TIMER: number = 15;
+var startTime: number;
 
 type InternalState = GameState;
 
@@ -58,7 +56,7 @@ export class Impl implements Methods<InternalState> {
         state.nerdleAnswer = ctx.chance.pickone(FinalAnswers);
         state.gameStatus = GameStatus.RUNNING;
         console.log(state.nerdleAnswer);
-        // timer.start(5000);
+        startTime = Date.now();
         return Response.ok();
     }
     fillTile(state: InternalState, userId: UserId, ctx: Context, request: IFillTileRequest): Response {
@@ -154,11 +152,12 @@ export class Impl implements Methods<InternalState> {
         if (state.gameStatus === GameStatus.RUNNING || state.gameStatus === GameStatus.NOT_STARTED) {
             nAnswer = undefined;
         }
+        let secondsLeft: number = gameTimeLeft(startTime, Date.now(), GAME_TIMER);
         let playersArray: Player[] = removeDataForOtherPlayers(Array.from(state.players), userId);
         return {
             players: playersArray,
             gameStatus: state.gameStatus,
-            timeLeft: state.timeLeft,
+            timeLeft: secondsLeft,
             nerdleAnswer: nAnswer,
         };
     }

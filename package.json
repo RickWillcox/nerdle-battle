@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "hathora": "^0.5.20",
+    "stopwatch": "^0.2.0",
     "tiny-timer": "^1.6.0"
   },
   "devDependencies": {
