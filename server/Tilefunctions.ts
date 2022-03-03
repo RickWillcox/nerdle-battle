@@ -1,4 +1,4 @@
-import { BoardState, GuessRow } from '../api/types';
+import { BoardState, GuessRow, TileState } from '../api/types';
 import { makeEquationFromGuessRow } from './MathFunctions';
 
 export function getNextAvailableTileIndex(boardState: BoardState): number {
@@ -42,4 +42,17 @@ export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): strin
     }
 
     return guess.split('');
+}
+
+export function getNewGuessRow(): GuessRow {
+    return [
+        { state: TileState.NOT_ACTIVE, char: '' },
+        { state: TileState.NOT_ACTIVE, char: '' },
+        { state: TileState.NOT_ACTIVE, char: '' },
+        { state: TileState.NOT_ACTIVE, char: '' },
+        { state: TileState.NOT_ACTIVE, char: '' },
+        { state: TileState.NOT_ACTIVE, char: '' },
+        { state: TileState.NOT_ACTIVE, char: '' },
+        { state: TileState.NOT_ACTIVE, char: '' },
+    ];
 }

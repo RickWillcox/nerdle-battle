@@ -17,7 +17,7 @@ import {
 } from '../api/types';
 import { FinalAnswers } from './FinalAnswers';
 import { ValidInputs } from './ValidInputs';
-import { getNextAvailableTileIndex, getLastTileChangedIndex, getGuessColours } from './Tilefunctions';
+import { getNextAvailableTileIndex, getLastTileChangedIndex, getGuessColours, getNewGuessRow } from './Tilefunctions';
 import { getPlayerIndexFromUserId, scrubCharForOtherPlayers } from './PlayerFunctions';
 import { isEquationValid, makeEquationFromGuessRow } from './MathFunctions';
 import { createRequire } from 'module';
@@ -31,17 +31,6 @@ const require = createRequire(import.meta.url);
 
 type InternalState = GameState;
 
-const DEFAULT_ROW: GuessRow = [
-    { state: TileState.NOT_ACTIVE, char: '' },
-    { state: TileState.NOT_ACTIVE, char: '' },
-    { state: TileState.NOT_ACTIVE, char: '' },
-    { state: TileState.NOT_ACTIVE, char: '' },
-    { state: TileState.NOT_ACTIVE, char: '' },
-    { state: TileState.NOT_ACTIVE, char: '' },
-    { state: TileState.NOT_ACTIVE, char: '' },
-    { state: TileState.NOT_ACTIVE, char: '' },
-];
-
 export class Impl implements Methods<InternalState> {
     initialize(userId: UserId, ctx: Context): InternalState {
         return {
@@ -53,7 +42,7 @@ export class Impl implements Methods<InternalState> {
     joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
         state.players.push({
             id: userId,
-            gameBoard: [Array.from(DEFAULT_ROW)],
+            gameBoard: [getNewGuessRow()],
         });
         return Response.ok();
     }
@@ -65,7 +54,6 @@ export class Impl implements Methods<InternalState> {
         return Response.ok();
     }
     fillTile(state: InternalState, userId: UserId, ctx: Context, request: IFillTileRequest): Response {
-        console.log('🚀 ~ file: impl.ts ~ line 68 ~ Impl ~ fillTile ~ userId', userId);
         if (state.gameStatus === GameStatus.RUNNING) {
             if (!ValidInputs.includes(request.input)) return Response.error(`Invalid Input ${request.input}`);
 
@@ -114,9 +102,12 @@ export class Impl implements Methods<InternalState> {
 
             // Wrong answer
             if (guessEquation !== state.nerdleAnswer) {
-                // push a new guess row
-                playerBoard.push(Array.from(DEFAULT_ROW));
-                return Response.error('Equation is not the answer');
+                if (playerBoard.length < 6) {
+                    // push a new guess row
+                    playerBoard.push(getNewGuessRow());
+                    return Response.error('Equation is not the answer');
+                }
+                return Response.error('Game Over, You have use all your guesses');
             }
 
             // Made it this far its the correct answer
@@ -147,9 +138,9 @@ export class Impl implements Methods<InternalState> {
         if (state.gameStatus === GameStatus.RUNNING || state.gameStatus === GameStatus.NOT_STARTED) {
             nAnswer = undefined;
         }
-        // let playersArray: Player[] = scrubCharForOtherPlayers(Array.from(state.players), userId);
+        let playersArray: Player[] = scrubCharForOtherPlayers(Array.from(state.players), userId);
         return {
-            players: state.players,
+            players: playersArray,
             gameStatus: state.gameStatus,
             timeLeft: state.timeLeft,
             nerdleAnswer: nAnswer,
