@@ -4,9 +4,12 @@ export function getPlayerIndexFromUserId(allPlayers: Player[], userId: UserId): 
     return allPlayers.findIndex((player) => player['id'] === userId);
 }
 
-export function scrubCharForOtherPlayers(playersArray: Player[], userId: UserId): Player[] {
+export function removeDataForOtherPlayers(playersArray: Player[], userId: UserId): Player[] {
     return playersArray.map((player) => {
         return {
+            inputBoard: player.inputBoard.map((input) => {
+                return player.id === userId ? input : {};
+            }),
             id: player.id,
             gameBoard: player.gameBoard.map((guessRow) => {
                 return guessRow.map((tile) => {
@@ -16,21 +19,3 @@ export function scrubCharForOtherPlayers(playersArray: Player[], userId: UserId)
         };
     });
 }
-
-// console.log(userId);
-// playersArray.forEach((p) => {
-//     console.log(p.gameBoard);
-// });
-
-// export function scrubCharForOtherPlayers(playersArray: Player[], userId: UserId): Player[] {
-//     playersArray.forEach((player) => {
-//         if (player.id !== userId) {
-//             player.gameBoard.forEach((guessRow) => {
-//                 guessRow.forEach((tile) => {
-//                     tile.char = '8'; // Why no work? https://www.typescriptlang.org/play?#code/FAGwpgLgBAHlC8UDawpQN5QJYBMBcUA5AIyEA0UA5gIYC2YAQgPbUBO+yKamAzhNRDAFiFAMYALNgRKEoAXzKoMUPgKFQRUCVKKl5wALoH5i7tg6EATOSp1GLdgSRdlqwQQDMYya2nWTSrz87lBeWj5+snKGxtFmuNIeNjT0zGwczoEqweph2r5ESQFmbrneOoRF0Ub6hsCgkFAArjxgrACSOAhQAESWPfUwAHQAZkysAKLUEgAUMwAOAJTwAHzoSlgjUAtDuFAAhPCILW2di+toaPNDKfbpo+NTszOsTADuiwgrGEqXUK9vB6TabiOYQLDgT6rH5-P7g8BDfLdHoADQGsPki1+mKU0TkWOAoiYADseEwESAmJQZjBFkA
-//                 });
-//             });
-//         }
-//     });
-//     return playersArray;
-// }

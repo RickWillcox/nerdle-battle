@@ -1,4 +1,4 @@
-import { BoardState, GuessRow, TileState } from '../api/types';
+import { BoardState, GuessRow, Input, Tile, TileState } from '../api/types';
 import { makeEquationFromGuessRow } from './MathFunctions';
 
 export function getNextAvailableTileIndex(boardState: BoardState): number {
@@ -18,8 +18,9 @@ export function getLastTileChangedIndex(boardState: BoardState) {
     return indexOfLastTileChanged;
 }
 
-export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): string[] {
+export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): [string[], string[]] {
     let guess = makeEquationFromGuessRow(guessRow);
+    let ogGuess = guess;
     let answer = nerdleAnswer;
     // Correct
     for (let i = 0; i < guess.length; i++) {
@@ -41,7 +42,26 @@ export function getGuessColours(guessRow: GuessRow, nerdleAnswer: string): strin
         }
     }
 
-    return guess.split('');
+    return [guess.split(''), ogGuess.split('')];
+}
+
+export function updateInputBoard(inputBoard: Input[], guessChar: string, colour: string) {
+    inputBoard.forEach((input) => {
+        if (input.char === guessChar) {
+            if (input.state === TileState.CORRECT) return;
+            if (colour === 'G') {
+                input.state = TileState.CORRECT;
+            }
+            if (input.state === TileState.WRONG_TILE) return;
+            if (colour === 'Y') {
+                input.state = TileState.WRONG_TILE;
+            }
+            if (input.state === TileState.WRONG_TILE) return;
+            if (colour === 'B') {
+                input.state = TileState.WRONG;
+            }
+        }
+    });
 }
 
 export function getNewGuessRow(): GuessRow {
@@ -54,5 +74,25 @@ export function getNewGuessRow(): GuessRow {
         { state: TileState.NOT_ACTIVE, char: '' },
         { state: TileState.NOT_ACTIVE, char: '' },
         { state: TileState.NOT_ACTIVE, char: '' },
+    ];
+}
+
+export function getNewInputBoard(): Input[] {
+    return [
+        { state: TileState.NOT_ACTIVE, char: '0' },
+        { state: TileState.NOT_ACTIVE, char: '1' },
+        { state: TileState.NOT_ACTIVE, char: '2' },
+        { state: TileState.NOT_ACTIVE, char: '3' },
+        { state: TileState.NOT_ACTIVE, char: '4' },
+        { state: TileState.NOT_ACTIVE, char: '5' },
+        { state: TileState.NOT_ACTIVE, char: '6' },
+        { state: TileState.NOT_ACTIVE, char: '7' },
+        { state: TileState.NOT_ACTIVE, char: '8' },
+        { state: TileState.NOT_ACTIVE, char: '9' },
+        { state: TileState.NOT_ACTIVE, char: '*' },
+        { state: TileState.NOT_ACTIVE, char: '/' },
+        { state: TileState.NOT_ACTIVE, char: '+' },
+        { state: TileState.NOT_ACTIVE, char: '/' },
+        { state: TileState.NOT_ACTIVE, char: '=' },
     ];
 }

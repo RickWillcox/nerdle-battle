@@ -17,8 +17,15 @@ import {
 } from '../api/types';
 import { FinalAnswers } from './FinalAnswers';
 import { ValidInputs } from './ValidInputs';
-import { getNextAvailableTileIndex, getLastTileChangedIndex, getGuessColours, getNewGuessRow } from './Tilefunctions';
-import { getPlayerIndexFromUserId, scrubCharForOtherPlayers } from './PlayerFunctions';
+import {
+    getNextAvailableTileIndex,
+    getLastTileChangedIndex,
+    getGuessColours,
+    getNewGuessRow,
+    getNewInputBoard,
+    updateInputBoard,
+} from './Tilefunctions';
+import { getPlayerIndexFromUserId, removeDataForOtherPlayers } from './PlayerFunctions';
 import { isEquationValid, makeEquationFromGuessRow } from './MathFunctions';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -43,6 +50,7 @@ export class Impl implements Methods<InternalState> {
         state.players.push({
             id: userId,
             gameBoard: [getNewGuessRow()],
+            inputBoard: getNewInputBoard(),
         });
         return Response.ok();
     }
@@ -75,6 +83,7 @@ export class Impl implements Methods<InternalState> {
         if (state.gameStatus === GameStatus.RUNNING) {
             let playerIndex = getPlayerIndexFromUserId(state.players, userId);
             let playerBoard = state.players[playerIndex].gameBoard;
+            let playerInputBoard = state.players[playerIndex].inputBoard;
             let guessRowIndex: number = playerBoard.length - 1;
             makeEquationFromGuessRow;
             let guessEquation: string = makeEquationFromGuessRow(playerBoard[guessRowIndex]);
@@ -86,17 +95,24 @@ export class Impl implements Methods<InternalState> {
             // update colours based on what what correct/ wrong or wrong position
             if (state.nerdleAnswer === undefined) return Response.error('Answer not found. Server Error');
             let guessColours = getGuessColours(playerBoard[guessRowIndex], state.nerdleAnswer);
-            for (let i = 0; i < guessColours.length; i++) {
+            for (let i = 0; i < guessColours[0].length; i++) {
                 let tS: TileState;
-                if (guessColours[i] === 'G') {
+                let iS: TileState;
+                let guessChar = guessColours[1][i];
+
+                if (guessColours[0][i] === 'G') {
                     tS = TileState.CORRECT;
-                } else if (guessColours[i] === 'Y') {
+                    updateInputBoard(playerInputBoard, guessChar, 'G');
+                } else if (guessColours[0][i] === 'Y') {
                     tS = TileState.WRONG_TILE;
+                    updateInputBoard(playerInputBoard, guessChar, 'Y');
                 } else {
                     tS = TileState.WRONG;
+                    updateInputBoard(playerInputBoard, guessChar, 'B');
                 }
                 playerBoard[guessRowIndex][i].state = tS;
             }
+
             console.log('Nerdle Answer: ', state.nerdleAnswer);
             console.log('Player guess: ', guessEquation);
 
@@ -138,7 +154,7 @@ export class Impl implements Methods<InternalState> {
         if (state.gameStatus === GameStatus.RUNNING || state.gameStatus === GameStatus.NOT_STARTED) {
             nAnswer = undefined;
         }
-        let playersArray: Player[] = scrubCharForOtherPlayers(Array.from(state.players), userId);
+        let playersArray: Player[] = removeDataForOtherPlayers(Array.from(state.players), userId);
         return {
             players: playersArray,
             gameStatus: state.gameStatus,
