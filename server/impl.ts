@@ -26,22 +26,31 @@ import {
     updateInputBoard,
 } from './Tilefunctions';
 import { getPlayerIndexFromUserId, removeDataForOtherPlayers } from './PlayerFunctions';
-import { isEquationValid, makeEquationFromGuessRow, gameTimeLeft } from './MathFunctions';
+import { isEquationValid, makeEquationFromGuessRow } from './MathFunctions';
 import { createRequire } from 'module';
+import { time } from 'console';
 const require = createRequire(import.meta.url);
 const Stopwatch = require('stopwatch').Stopwatch;
 
-const GAME_TIMER: number = 15;
-var startTime: number;
+const GAME_TIMER: number = 180;
 
 type InternalState = GameState;
 
 export class Impl implements Methods<InternalState> {
+    onTick(state: GameState, ctx: Context, timeDelta: number): void {
+        if (state.gameStatus === GameStatus.RUNNING) {
+            state.timeLeft -= timeDelta;
+        }
+        if (state.timeLeft <= 0) {
+            state.timeLeft = 0;
+            state.gameStatus = GameStatus.ENDED;
+        }
+    }
     initialize(userId: UserId, ctx: Context): InternalState {
         return {
             players: [],
             gameStatus: GameStatus.NOT_STARTED,
-            timeLeft: 60,
+            timeLeft: GAME_TIMER,
         };
     }
     joinGame(state: InternalState, userId: UserId, ctx: Context, request: IJoinGameRequest): Response {
@@ -56,7 +65,6 @@ export class Impl implements Methods<InternalState> {
         state.nerdleAnswer = ctx.chance.pickone(FinalAnswers);
         state.gameStatus = GameStatus.RUNNING;
         console.log(state.nerdleAnswer);
-        startTime = Date.now();
         return Response.ok();
     }
     fillTile(state: InternalState, userId: UserId, ctx: Context, request: IFillTileRequest): Response {
@@ -152,12 +160,11 @@ export class Impl implements Methods<InternalState> {
         if (state.gameStatus === GameStatus.RUNNING || state.gameStatus === GameStatus.NOT_STARTED) {
             nAnswer = undefined;
         }
-        let secondsLeft: number = gameTimeLeft(startTime, Date.now(), GAME_TIMER);
         let playersArray: Player[] = removeDataForOtherPlayers(Array.from(state.players), userId);
         return {
             players: playersArray,
             gameStatus: state.gameStatus,
-            timeLeft: secondsLeft,
+            timeLeft: state.timeLeft,
             nerdleAnswer: nAnswer,
         };
     }

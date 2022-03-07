@@ -31,7 +31,7 @@ types:
     GameState:
         players: Player[]
         gameStatus: GameStatus
-        timeLeft: int
+        timeLeft: float
         nerdleAnswer: string?
         winner: UserId?
 
@@ -48,3 +48,4 @@ auth:
 
 userState: GameState
 error: string
+tick: 100
